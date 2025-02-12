@@ -1,5 +1,8 @@
+import asyncio
+
+from fastapi.responses import StreamingResponse
 from chat import utils
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessageChunk
 from fastapi import HTTPException
 
 
@@ -27,5 +30,19 @@ class ChatService:
             HumanMessage(content=user_query),
         ]
 
-        async for event in self.llm.astream(input=messages):
-            print(event.content, end=" ")
+        async def content_generator():
+            async for event in self.llm.astream_events(input=messages, version="v2"):
+                try:
+                    if event.get("event", "") == "on_chat_model_stream" and isinstance(
+                        event.get("data"), dict
+                    ):
+                        chunk = event.get("data").get("chunk")
+                        if isinstance(chunk, AIMessageChunk) and isinstance(
+                            chunk.content, str
+                        ):
+                            yield chunk.content.encode("utf-8")
+                    await asyncio.sleep(0.1)
+                except Exception:
+                    raise HTTPException(500, "Internal Server Error")
+
+        return StreamingResponse(content_generator(), media_type="text/markdown")
