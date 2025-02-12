@@ -41,8 +41,7 @@ class ChatService:
                             chunk.content, str
                         ):
                             yield chunk.content.encode("utf-8")
-                    await asyncio.sleep(0.1)
-                except Exception:
-                    raise HTTPException(500, "Internal Server Error")
+                except Exception as e:
+                    yield f"Error while generating response.".encode("utf-8")
 
         return StreamingResponse(content_generator(), media_type="text/markdown")
