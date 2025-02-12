@@ -43,5 +43,6 @@ class ChatService:
                             yield chunk.content.encode("utf-8")
                 except Exception as e:
                     yield f"Error while generating response.".encode("utf-8")
+                    break
 
         return StreamingResponse(content_generator(), media_type="text/markdown")
