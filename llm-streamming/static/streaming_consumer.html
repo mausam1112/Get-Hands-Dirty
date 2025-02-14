@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .chat-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 70%;
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background: #e9ecef;
+            margin-right: auto;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        code {
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            background-color: #f0f0f0;
+        }
+
+        pre {
+            padding: 10px;
+            border-radius: 2px;
+            background-color: #f0f0f0;
+            overflow: auto;
+        }
+
+        pre code {
+            padding: 0;
+            border-radius: 0;
+            background-color: transparent;
+        }
+
+        /* Prism.js styles */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #999;
+        }
+
+        .token.punctuation {
+            color: #999;
+        }
+
+        .token.namespace {
+            opacity: .7;
+        }
+
+        .token.property,
+        .token.tag,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #0668d9;
+        }
+
+        .token.boolean,
+        .token.number {
+            color: #e09142;
+        }
+
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #33cc33;
+        }
+
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #999;
+            background: #f0f0f0;
+        }
+
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #33cc33;
+        }
+
+        .token.function {
+            color: #33cc33;
+        }
+
+        .token.regex,
+        .token.important {
+            color: #e09142;
+        }
+
+        .token.important,
+        .token.bold {
+            font-weight: bold;
+        }
+
+        .token.italic {
+            font-style: italic;
+        }
+
+        .token.entity {
+            cursor: help;
+        }
+
+        .token.url {
+            text-decoration: underline;
+        }
+
+        /* Prism.js line numbers */
+        .line-numbers .line-numbers-rows {
+            left: -3.8em;
+            width: 3em;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .line-numbers .line-numbers-rows>span {
+            pointer-events: none;
+            display: block;
+            counter-increment: linenumber;
+        }
+
+        .line-numbers .line-numbers-rows>span:before {
+            content: counter(linenumber);
+            width: 100%;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+            color: #999;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #3e8e41;
+        }
+
+        .copy-message-button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .copy-message-button:hover {
+            background-color: #3e8e41;
+        }
+
+        .copy-button i {
+            font-size: 16px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <h1>Chat with AI</h1>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-group">
+            <input type="text" id="userInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.10/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+
+        function appendMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            if (!isUser) {
+                messageDiv.innerHTML = marked.parse(message); // Parse markdown content
+            } else {
+                messageDiv.textContent = message;
+            }
+            // Highlight code blocks using Prism.js
+            Prism.highlightAllUnder(messageDiv);
+
+            // Add copy to clipboard button for code sections
+            if (!isUser) {
+                // Add copy to clipboard button for code sections
+                const codeBlocks = messageDiv.querySelectorAll('pre code');
+                codeBlocks.forEach((codeBlock) => {
+                    const copyButton = document.createElement('button');
+                    copyButton.innerHTML = '<i class="fa fa-copy"></i>';
+                    copyButton.className = 'copy-button';
+                    copyButton.addEventListener('click', () => {
+                        navigator.clipboard.writeText(codeBlock.textContent);
+                    });
+                    codeBlock.parentNode.insertBefore(copyButton, codeBlock);
+                });
+
+                // Add copy to clipboard button for entire message
+                const copyMessageButton = document.createElement('button');
+                copyMessageButton.innerHTML = '<i class="fa fa-copy"></i>';
+                copyMessageButton.className = 'copy-message-button';
+                copyMessageButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(messageDiv.textContent);
+                });
+                messageDiv.appendChild(copyMessageButton);
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const prompt = userInput.value.trim();
+            if (!prompt) return;
+
+            // Clear input and disable during processing
+            userInput.value = '';
+            userInput.disabled = true;
+
+            // Display user message
+            appendMessage(prompt, true);
+
+            try {
+                const response = await fetch(`/generate?user_query=${encodeURIComponent(prompt)}`);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let aiMessage = '';
+
+                // Create initial AI message container
+                const aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'message ai-message';
+                chatBox.appendChild(aiMessageDiv);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    aiMessage += decoder.decode(value);
+                    aiMessageDiv.innerHTML = marked.parse(aiMessage); // Parse markdown content
+
+                    // Highlight code blocks using Prism.js
+                    Prism.highlightAllUnder(aiMessageDiv);
+
+
+                    // Add copy to clipboard button for code sections
+                    const codeBlocks = aiMessageDiv.querySelectorAll('pre code');
+                    codeBlocks.forEach((codeBlock) => {
+                        const copyButton = document.createElement('button');
+                        copyButton.innerHTML = '<i class="fa fa-copy"></i>';
+                        copyButton.className = 'copy-button';
+                        copyButton.addEventListener('click', () => {
+                            navigator.clipboard.writeText(codeBlock.textContent);
+                        });
+                        codeBlock.parentNode.insertBefore(copyButton, codeBlock);
+                    });
+
+                    // Add copy to clipboard button for entire message
+                    const copyMessageButton = document.createElement('button');
+                    copyMessageButton.innerHTML = '<i class="fa fa-copy"></i> ';
+                    copyMessageButton.className = 'copy-message-button';
+                    copyMessageButton.addEventListener('click', () => {
+                        navigator.clipboard.writeText(aiMessageDiv.textContent);
+                    });
+                    aiMessageDiv.appendChild(copyMessageButton);
+
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            } catch (error) {
+                appendMessage(`Error: ${error.message}`, false);
+            } finally {
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        function sanitizeHtml(message) {
+            // Parse markdown and sanitize it to avoid XSS
+            const markdownHtml = marked.parse(message);
+            const sanitizedHtml = DOMPurify.sanitize(markdownHtml, {
+                ALLOWED_TAGS: [
+                    "address", "article", "aside", "footer", "header", "h1", "h2", "h3", "h4",
+                    "h5", "h6", "hgroup", "main", "nav", "section", "blockquote", "dd", "div",
+                    "dl", "dt", "figcaption", "figure", "hr", "li", "main", "ol", "p", "pre",
+                    "ul", "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn",
+                    "em", "i", "kbd", "mark", "q", "rb", "rp", "rt", "rtc", "ruby", "s", "samp",
+                    "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "caption",
+                    "col", "colgroup", "table", "tbody", "td", "tfoot", "th", "thead", "tr"
+                ],
+                ALLOWED_ATTR: {
+                    a: ['href', 'name', 'target'],
+                    img: ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading']
+                }
+            });
+            return sanitizedHtml;
+        }
+
+        // Handle Enter key
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+
+</html>
