@@ -1,11 +1,14 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from chat.routes import router as chat_router
 
 
 app = FastAPI(title="Streamming APP")
 
 app.include_router(chat_router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 if __name__ == "__main__":
