@@ -38,6 +38,33 @@ class SelfAttention_v2(nn.Module):
         return context_vec
 
 
+class CausalAttention(nn.Module):
+    def __init__(self, d_in, d_out, context_length, dropout, qkv_bias=False):
+        super().__init__()
+        self.d_out = d_out
+        self.w_query = nn.Linear(d_in, d_out, bias=qkv_bias)
+        self.w_key = nn.Linear(d_in, d_out, bias=qkv_bias)
+        self.w_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+        self.dropout = nn.Dropout(dropout)
+        self.register_buffer(
+            "mask", torch.triu(torch.ones(context_length, context_length), diagonal=1)
+        )
+
+    def forward(self, x):
+        b, num_tokens, d_in = x.shape
+        keys = self.w_key(x)
+        queries = self.w_query(x)
+        values = self.w_value(x)
+
+        attn_scores = queries @ keys.transpose(1, 2)
+        attn_scores.masked_fill_(self.mask.bool()[:num_tokens, :num_tokens], -torch.inf)
+        attn_weights = torch.softmax(attn_scores / keys.shape[-1] ** 0.5, dim=-1)
+        attn_weights = self.dropout(attn_weights)
+
+        context_vec = attn_weights @ values
+        return context_vec
+
+
 if __name__ == "__main__":
     inputs = torch.tensor(
         [
@@ -55,5 +82,12 @@ if __name__ == "__main__":
     d_in = inputs.shape[1]
     d_out = 2
 
-    sa = SelfAttention_v2(d_in, d_out)
-    print(sa(inputs))
+    # sa = SelfAttention_v2(d_in, d_out)
+    # print(sa(inputs))
+
+    batch = torch.stack((inputs, inputs), dim=0)
+    context_length = batch.shape[1]
+    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    context_vecs = ca(batch)
+    print("context vector:", context_vecs)
+    print("context vector shape:", context_vecs.shape)
