@@ -14,4 +14,4 @@ class LayerNorm(nn.Module):
         var = x.var(dim=-1, keepdim=True, unbiased=False)
         # small constant is added to variance to prevent zero division error
         norm_x = (x - mean) / torch.sqrt(var + self.eps)
-        return self.scale * norm_x + self.shift
+        return (self.scale * norm_x) + self.shift
