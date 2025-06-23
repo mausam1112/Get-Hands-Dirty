@@ -39,3 +39,23 @@ def filter_corrupted_images():
                     # Delete corrupted image
                     os.remove(fpath)
     print(f"Deleted {num_skipped} images.")
+
+
+def gen_train_val_data():
+    train_ds, val_ds = keras.utils.image_dataset_from_directory(
+        os.path.join(setup.DATA_PATH, "training_set"),
+        labels="inferred",
+        validation_split=0.2,
+        subset="both",
+        seed=42,
+        image_size=setup.IMAGE_SIZE,
+        batch_size=setup.BATCH_SIZE,
+    )
+    test_ds = keras.utils.image_dataset_from_directory(
+        os.path.join(setup.DATA_PATH, "test_set"),
+        labels="inferred",
+        image_size=setup.IMAGE_SIZE,
+        batch_size=setup.BATCH_SIZE,
+    )
+
+    return train_ds, val_ds, test_ds
