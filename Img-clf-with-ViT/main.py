@@ -1,6 +1,7 @@
 from data import load, visualize
 from nn.layers import patch
 from config import setup
+from nn import model
 
 
 def main():
@@ -15,6 +16,8 @@ def main():
         break
 
     visualize.display_patches(train_ds)
+    img_clf = model.vit_classifier(num_class=1)
+    print(img_clf.summary())
 
 
 if __name__ == "__main__":
