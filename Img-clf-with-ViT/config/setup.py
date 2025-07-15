@@ -3,6 +3,8 @@ import os
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 DATA_PATH = "D:/Projects/Hands-Dirty/dataset/clf/cat-dog dataset"
+MODEL_PATH = "D:/Projects/Hands-Dirty/Img-clf-with-ViT/saved_model"
+PREFIX = "exp"
 IMAGE_SIZE = (180, 180)
 CHANNEL = 3
 BATCH_SIZE = 128

@@ -2,6 +2,7 @@ from data import load, visualize
 from nn.layers import patch
 from config import setup
 from nn import model
+from utils import utils
 
 
 def main():
@@ -18,6 +19,9 @@ def main():
     visualize.display_patches(train_ds)
     img_clf = model.vit_classifier(num_class=1)
     print(img_clf.summary())
+
+    new_suffix = utils.suffix_counter(setup.MODEL_PATH, is_dir=True, prefix=setup.PREFIX)
+    print(f"{new_suffix = }")
 
 
 if __name__ == "__main__":
