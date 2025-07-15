@@ -5,7 +5,7 @@ os.environ["KERAS_BACKEND"] = "tensorflow"
 DATA_PATH = "D:/Projects/Hands-Dirty/dataset/clf/cat-dog dataset"
 MODEL_PATH = "D:/Projects/Hands-Dirty/Img-clf-with-ViT/saved_model"
 PREFIX = "exp"
-IMAGE_SIZE = (180, 180)
+IMAGE_SIZE = (90, 90)
 CHANNEL = 3
 BATCH_SIZE = 128
 
@@ -27,6 +27,6 @@ transformer_units = [
 ]  # Size of the transformer layers
 transformer_layers = 8
 mlp_head_units = [
-    2048,
     1024,
+    512,
 ]  # Size of the dense layers of the final classifier
