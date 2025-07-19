@@ -1,5 +1,16 @@
 import os
+import matplotlib.pyplot as plt
 
+
+def plot_history(history, item):
+    plt.plot(history.history[item], label=item)
+    plt.plot(history.history["val_" + item], label="val_" + item)
+    plt.xlabel("Epochs")
+    plt.ylabel(item)
+    plt.title("Train and Validation {} Over Epochs".format(item), fontsize=14)
+    plt.legend()
+    plt.grid()
+    plt.show()
 
 def suffix_counter(path: str, is_dir: bool, prefix: str) -> None | int:
     """
