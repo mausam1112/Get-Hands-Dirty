@@ -3,6 +3,7 @@ from nn.layers import patch
 from config import setup
 from nn import model
 from utils import utils
+from train import run_experiment
 
 
 def main():
@@ -23,6 +24,8 @@ def main():
     new_suffix = utils.suffix_counter(setup.MODEL_PATH, is_dir=True, prefix=setup.PREFIX)
     print(f"{new_suffix = }")
 
+    history = run_experiment(img_clf, train_ds, val_ds, test_ds, new_suffix)
+    utils.plot_history(history, 'loss')
 
 if __name__ == "__main__":
     main()
