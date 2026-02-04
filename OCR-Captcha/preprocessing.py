@@ -1,4 +1,6 @@
 import keras
+import tensorflow as tf
+from configs import Hyperparater as hypr
 from keras import layers, ops
 
 
@@ -32,3 +34,18 @@ def split_data(images, labels, train_split=0.9, shuffle=True):
 
     return x_train, x_valid, y_train, y_valid
 
+def encode_sample(img_path, label, char_to_num):
+    # load image
+    img = tf.io.read_file(img_path)
+    # decode and transform to grayscale with channel 1
+    img = tf.io.decode_png(img, channels=1)
+    # converting to float32 and normalizing the img by converting pixel value between 0 and 1
+    img = tf.image.convert_image_dtype(img, tf.float32)
+    # resize image
+    img = ops.image.resize(img, [hypr.IMG_HEIGHT, hypr.IMG_WIDTH])
+    # transpose [h, w, c] to [w, h, c] so that width represents time dimension
+    img = ops.transpose(img, axes=[1, 0, 2])
+    # map the characters in labels to numbers
+    label = char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
+    # return transformed image and encoded label
+    return {"image": img, "label": label}
